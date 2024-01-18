@@ -1,16 +1,33 @@
 <?php
-$data = json_decode(file_get_contents("php://input"), true);
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "tournoihbd";
 
-$adminEmail = $data['adminEmail'];
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-$message = "Squad Name: " . $data['squadname'] . "\n";
-$message .= "Player 1: " . $data['player1'] . "\n";
-$message .= "Player 2: " . $data['player2'] . "\n";
-$message .= "Player 3: " . $data['player3'] . "\n";
-$message .= "Player 4: " . $data['player4'] . "\n";
+if ($conn->connect_error) {
+    die("La connexion à la base de données a échoué: " . $conn->connect_error);
+}
 
-mail($adminEmail, 'Nouvelle Inscription Tournoi', $message);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $squadname = $_POST["squadname"];
+    $player1 = $_POST["player1"];
+    $player2 = $_POST["player2"];
+    $player3 = $_POST["player3"];
+    $player4 = $_POST["player4"];
+    $adminEmail = $_POST["adminEmail"];
 
-$response = array('message' => 'Inscription réussie !');
-echo json_encode($response);
+    $sql = "INSERT INTO inscriptions (squadname, player1, player2, player3, player4, adminEmail) 
+            VALUES ('$squadname', '$player1', '$player2', '$player3', '$player4', '$adminEmail')";
+
+    if ($conn->query($sql) === TRUE) {
+        header("Location: confirmation.html");
+        exit();
+    } else {
+        echo "Erreur d'insertion dans la base de données: " . $conn->error;
+    }
+}
+
+$conn->close();
 ?>
